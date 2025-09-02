@@ -30,7 +30,7 @@ class SubtopicActivity : AppCompatActivity() {
         binding.subtopicList.layoutManager = LinearLayoutManager(this)
         val adapter = SubtopicAdapter(subtopics) { subtopic ->
             val subtopicId = subtopic.substringAfter("subtopic-").toIntOrNull()
-            val imageName = "image-$subtopicId.png"
+            val imageName = "image-$subtopicId.jpg"
 
             val imageFile = File(filesDir, "images/$topicName/$imageName")
 
