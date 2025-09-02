@@ -6,6 +6,5 @@ data class Topic(
     val name: String,
     val url: String,
     val startId: Int,
-    val endId: Int,
-    val description: String
+    val endId: Int
 ) : Serializable
