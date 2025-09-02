@@ -4,20 +4,17 @@ import android.content.Intent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
-import android.widget.ProgressBar
-import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.testapplication.R
 import com.example.testapplication.databinding.ItemDownloadTopicBinding
 import com.example.testapplication.payload.Topic
+import java.io.File
 
 class DownloadAdapter(
     private val topics: List<Topic>,
     private val downloadActivity: DownloadActivity
 ) : RecyclerView.Adapter<DownloadAdapter.DownloadViewHolder>() {
 
-    // Store progress (0-100 for downloading, -1 for failed, 100 for downloaded)
     private val progressMap = mutableMapOf<String, Int>()
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): DownloadViewHolder {
@@ -31,7 +28,6 @@ class DownloadAdapter(
 
     override fun onBindViewHolder(holder: DownloadViewHolder, position: Int) {
         val topic = topics[position]
-        // Get current progress or default to 0 (not started)
         val progress = progressMap.getOrDefault(topic.name, 0)
         holder.bind(topic, progress)
     }
@@ -52,9 +48,28 @@ class DownloadAdapter(
         fun bind(topic: Topic, progress: Int) {
             binding.downloadTopicName.text = topic.name
 
-            // Manage UI elements based on progress
+            val topicImagesDir = File(itemView.context.filesDir, "images/${topic.name}")
+            val isDownloaded = topicImagesDir.exists() && topicImagesDir.isDirectory && topicImagesDir.list()?.isNotEmpty() == true
+
             when {
-                progress == -1 -> { // Failed
+                isDownloaded -> {
+                    binding.downloadStatusText.text = "Downloaded"
+                    binding.downloadStatusText.setTextColor(itemView.context.getColor(R.color.md_theme_tertiary))
+                    binding.downloadProgressContainer.visibility = View.GONE
+                    binding.downloadButton.visibility = View.VISIBLE
+                    binding.buttonProgressSpinner.visibility = View.GONE
+                    binding.downloadButton.text = "View"
+                    binding.downloadButton.isEnabled = true
+                    binding.downloadButton.setOnClickListener {
+                        val intent = Intent(itemView.context, SubtopicActivity::class.java).apply {
+                            putExtra("topic_name", topic.name)
+                            putExtra("start_id", topic.startId)
+                            putExtra("end_id", topic.endId)
+                        }
+                        itemView.context.startActivity(intent)
+                    }
+                }
+                progress == -1 -> {
                     binding.downloadStatusText.text = "Download Failed"
                     binding.downloadStatusText.setTextColor(itemView.context.getColor(R.color.md_theme_error))
                     binding.downloadProgressContainer.visibility = View.GONE
@@ -66,7 +81,7 @@ class DownloadAdapter(
                         downloadActivity.startDownload(topic)
                     }
                 }
-                progress > 0 && progress < 100 -> { // Downloading
+                progress > 0 && progress < 100 -> {
                     binding.downloadStatusText.text = "Downloading... $progress%"
                     binding.downloadStatusText.setTextColor(itemView.context.getColor(R.color.md_theme_primary))
                     binding.downloadProgressContainer.visibility = View.VISIBLE
@@ -75,25 +90,7 @@ class DownloadAdapter(
                     binding.downloadButton.visibility = View.GONE
                     binding.buttonProgressSpinner.visibility = View.VISIBLE
                 }
-                progress == 100 -> { // Downloaded successfully
-                    binding.downloadStatusText.text = "Downloaded"
-                    binding.downloadStatusText.setTextColor(itemView.context.getColor(R.color.md_theme_tertiary))
-                    binding.downloadProgressContainer.visibility = View.GONE
-                    binding.downloadButton.visibility = View.VISIBLE
-                    binding.buttonProgressSpinner.visibility = View.GONE
-                    binding.downloadButton.text = "View"
-                    binding.downloadButton.isEnabled = true
-
-                    binding.downloadButton.setOnClickListener {
-                        val intent = Intent(itemView.context, SubtopicActivity::class.java).apply {
-                            putExtra("topic_name", topic.name)
-                            putExtra("start_id", topic.startId)
-                            putExtra("end_id", topic.endId)
-                        }
-                        itemView.context.startActivity(intent)
-                    }
-                }
-                else -> { // Not started (progress == 0)
+                else -> {
                     binding.downloadStatusText.text = "Ready to download"
                     binding.downloadStatusText.setTextColor(itemView.context.getColor(R.color.md_theme_onSurfaceVariant))
                     binding.downloadProgressContainer.visibility = View.GONE

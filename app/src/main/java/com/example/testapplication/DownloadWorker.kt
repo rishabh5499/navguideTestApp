@@ -32,7 +32,7 @@ class DownloadWorker(context: Context, params: WorkerParameters) : CoroutineWork
         try {
             val client = OkHttpClient.Builder()
                 .connectTimeout(60, TimeUnit.SECONDS)
-                .readTimeout(120, TimeUnit.SECONDS) // Increased timeout for large files
+                .readTimeout(120, TimeUnit.SECONDS)
                 .build()
 
             val request = Request.Builder().url(url).build()
@@ -48,7 +48,6 @@ class DownloadWorker(context: Context, params: WorkerParameters) : CoroutineWork
 
             val zipFile = File(applicationContext.filesDir, "$topicName.zip")
 
-            // --- Download and Progress Tracking ---
             FileOutputStream(zipFile).use { fos ->
                 val inputStream: InputStream = body.byteStream()
                 var bytesDownloaded = 0L
@@ -59,7 +58,6 @@ class DownloadWorker(context: Context, params: WorkerParameters) : CoroutineWork
                     fos.write(buffer, 0, bytesRead)
                     bytesDownloaded += bytesRead
                     val progress = ((bytesDownloaded * 100) / totalBytes).toInt()
-                    // Publish progress, but only for the first 90% to account for extraction
                     if (progress < 90) {
                         setProgress(workDataOf(PROGRESS_KEY to progress))
                     }
@@ -67,40 +65,40 @@ class DownloadWorker(context: Context, params: WorkerParameters) : CoroutineWork
             }
 
             Log.d(TAG, "Download complete. Starting extraction.")
-            setProgress(workDataOf(PROGRESS_KEY to 90)) // Update progress to show extraction is starting
+            setProgress(workDataOf(PROGRESS_KEY to 90))
 
-            // --- File Extraction and Renaming ---
-            val destinationDir = File(applicationContext.filesDir, topicName)
+            val destinationDir = File(applicationContext.filesDir, "images/$topicName")
             if (!destinationDir.exists()) {
                 destinationDir.mkdirs()
+                Log.d(TAG, "Created directory: ${destinationDir.absolutePath}")
             }
 
             val buffer = ByteArray(1024)
             ZipInputStream(zipFile.inputStream()).use { zis ->
                 var zipEntry: ZipEntry? = zis.nextEntry
                 while (zipEntry != null) {
-                    if (!zipEntry.isDirectory) {
-                        val originalFileName = zipEntry.name
-                        val imageId = originalFileName.substringAfter("image-").substringBefore(".png").toIntOrNull()
-
-                        if (imageId != null) {
-                            val newFile = File(destinationDir, "image-$imageId.png")
-                            FileOutputStream(newFile).use { fos ->
-                                var len: Int
-                                while (zis.read(buffer).also { len = it } > 0) {
-                                    fos.write(buffer, 0, len)
-                                }
-                            }
-                        }
+                    if (zipEntry.isDirectory) {
+                        zipEntry = zis.nextEntry
+                        continue
                     }
-                    zis.closeEntry()
+                    val originalFileName = zipEntry.name
+                    val newFile = File(destinationDir, originalFileName)
+                    Log.d(TAG, "Extracting file: $originalFileName to ${newFile.absolutePath}")
+
+                    try {
+                        FileOutputStream(newFile).use { fos ->
+                            zis.copyTo(fos)
+                        }
+                        Log.d(TAG, "Successfully extracted ${newFile.name}")
+                    } catch (e: Exception) {
+                        Log.e(TAG, "Failed to write file ${newFile.name}: ${e.message}", e)
+                        newFile.delete()
+                    }
                     zipEntry = zis.nextEntry
                 }
             }
             Log.d(TAG, "Extraction complete. Deleting temp file.")
-
-            // --- Cleanup ---
-//            zipFile.delete()
+            zipFile.delete()
 
             setProgress(workDataOf(PROGRESS_KEY to 100))
             Log.d(TAG, "Worker finished successfully.")

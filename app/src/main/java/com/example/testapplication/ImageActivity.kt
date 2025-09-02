@@ -25,7 +25,6 @@ class ImageActivity : AppCompatActivity() {
                     .into(binding.imageView)
             } else {
                 // Handle case where image path is invalid or file is missing
-                // e.g., show an error placeholder or toast
             }
         }
     }

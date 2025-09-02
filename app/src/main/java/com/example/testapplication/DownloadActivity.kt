@@ -1,15 +1,18 @@
 package com.example.testapplication
 
+import android.content.Intent
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
+import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.work.*
 import com.example.testapplication.R
 import com.example.testapplication.databinding.ActivityDownloadBinding
-import android.os.Handler
-import android.os.Looper
 import com.example.testapplication.payload.Topic
+import java.io.File
 
 class DownloadActivity : AppCompatActivity() {
 
@@ -19,7 +22,6 @@ class DownloadActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         binding = ActivityDownloadBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
@@ -38,7 +40,9 @@ class DownloadActivity : AppCompatActivity() {
         val downloadWorkRequest = OneTimeWorkRequestBuilder<DownloadWorker>()
             .setInputData(workDataOf(
                 "topic_name" to topic.name,
-                "url" to topic.url
+                "url" to topic.url,
+                "start_id" to topic.startId,
+                "end_id" to topic.endId
             ))
             .setConstraints(
                 Constraints.Builder()
@@ -59,10 +63,9 @@ class DownloadActivity : AppCompatActivity() {
                         }
                         WorkInfo.State.SUCCEEDED -> {
                             Toast.makeText(this, "${topic.name} download complete!", Toast.LENGTH_SHORT).show()
-                            // Introduce a small delay to allow file system operations to complete
                             Handler(Looper.getMainLooper()).postDelayed({
                                 adapter.updateProgress(topic, 100)
-                            }, 500) // 500ms delay should be sufficient
+                            }, 500)
                         }
                         WorkInfo.State.FAILED -> {
                             Toast.makeText(this, "${topic.name} download failed.", Toast.LENGTH_SHORT).show()

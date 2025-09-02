@@ -1,11 +1,11 @@
 package com.example.testapplication
 
-import com.example.testapplication.databinding.ActivitySubtopicBinding
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.testapplication.databinding.ActivitySubtopicBinding
 import java.io.File
 
 class SubtopicActivity : AppCompatActivity() {
@@ -32,8 +32,7 @@ class SubtopicActivity : AppCompatActivity() {
             val subtopicId = subtopic.substringAfter("subtopic-").toIntOrNull()
             val imageName = "image-$subtopicId.png"
 
-            // Check for the image in the correct local directory
-            val imageFile = File(filesDir, "$topicName/$imageName")
+            val imageFile = File(filesDir, "images/$topicName/$imageName")
 
             if (imageFile.exists()) {
                 val intent = Intent(this, ImageActivity::class.java).apply {
