@@ -45,7 +45,6 @@ class MainActivity : AppCompatActivity() {
         }
         binding.topicList.adapter = topicAdapter
 
-        // Observe all existing downloads when the activity starts
         observeDownloads()
     }
 
@@ -60,7 +59,7 @@ class MainActivity : AppCompatActivity() {
                     .setRequiredNetworkType(NetworkType.CONNECTED)
                     .build()
             )
-            .addTag(topic.name) // Add a tag to easily find this work
+            .addTag(topic.name)
             .build()
 
         WorkManager.getInstance(this).enqueue(downloadWorkRequest)

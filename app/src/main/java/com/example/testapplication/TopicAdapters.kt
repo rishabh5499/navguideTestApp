@@ -6,7 +6,6 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import androidx.work.WorkInfo
 import com.bumptech.glide.Glide
-import com.example.testapplication.R
 import com.example.testapplication.databinding.ItemTopicBinding
 import com.example.testapplication.payload.Topic
 import java.io.File
@@ -55,6 +54,7 @@ class TopicAdapter(
 
             when {
                 isDownloaded -> {
+                    //Downloaded State
                     binding.viewButton.text = "View"
                     binding.downloadProgressContainer.visibility = View.GONE
 
@@ -67,7 +67,7 @@ class TopicAdapter(
                             .centerCrop()
                             .into(binding.topicThumbnail)
                     } else {
-//                        binding.topicThumbnail.setImageResource(R.drawable.placeholder_image)
+                        binding.topicThumbnail.setImageResource(R.drawable.ic_launcher_background)
                     }
 
                     binding.viewButton.setOnClickListener {
@@ -80,14 +80,14 @@ class TopicAdapter(
                     binding.downloadProgressContainer.visibility = View.VISIBLE
                     binding.downloadProgressBar.progress = progress ?: 0
                     binding.progressPercentageText.text = "$progress%"
-//                    binding.topicThumbnail.setImageResource(R.drawable.placeholder_image)
+                    binding.topicThumbnail.setImageResource(R.drawable.ic_launcher_foreground)
                     binding.viewButton.setOnClickListener(null)
                 }
                 else -> {
                     // Initial or Failed State
                     binding.viewButton.text = "Download"
                     binding.downloadProgressContainer.visibility = View.GONE
-//                    binding.topicThumbnail.setImageResource(R.drawable.placeholder_image)
+                    binding.topicThumbnail.setImageResource(R.drawable.ic_launcher_foreground)
                     binding.viewButton.setOnClickListener {
                         onTopicClick(topic)
                     }
