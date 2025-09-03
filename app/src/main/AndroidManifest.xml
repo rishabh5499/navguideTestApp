@@ -26,10 +26,6 @@
                 android:resource="@xml/file_paths" />
         </provider>
         <activity
-            android:name=".DownloadActivity"
-            android:exported="false"
-            android:theme="@style/Theme.TestApplication" />
-        <activity
             android:name=".ImageActivity"
             android:exported="false"
             android:theme="@style/Theme.TestApplication" />
