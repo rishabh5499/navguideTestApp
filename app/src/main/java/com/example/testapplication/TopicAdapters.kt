@@ -59,7 +59,7 @@ class TopicAdapter(
                     binding.downloadProgressContainer.visibility = View.GONE
 
                     val imageFiles = topicImagesDir.listFiles { file -> file.name.endsWith(".png") || file.name.endsWith(".jpg") }
-                    val firstImageFile = imageFiles?.minByOrNull { it.name }
+                    val firstImageFile = imageFiles?.sortedBy { it.name }?.firstOrNull()
 
                     if (firstImageFile != null) {
                         Glide.with(itemView.context)
@@ -67,7 +67,7 @@ class TopicAdapter(
                             .centerCrop()
                             .into(binding.topicThumbnail)
                     } else {
-                        binding.topicThumbnail.setImageResource(R.drawable.ic_launcher_background)
+                        binding.topicThumbnail.setImageResource(R.drawable.ic_launcher_foreground)
                     }
 
                     binding.viewButton.setOnClickListener {
